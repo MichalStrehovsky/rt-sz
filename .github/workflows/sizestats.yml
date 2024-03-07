@@ -1,0 +1,215 @@
+name: Generate size statistics
+
+on:
+  issues:
+    types: [opened, reopened]
+
+jobs:
+  check_title:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check title is correct
+        if: ${{ !(github.event.issue.title > 0) }}
+        run: |
+          curl \
+            -X POST \
+            -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
+            -H "Content-Type: application/json" \
+            https://api.github.com/repos/${{ github.repository }}/issues/${{ github.event.issue.number }}/comments \
+            -d '{"body":"Error: issue title must be a pull request number. Reopen once you fix this."}'
+
+          curl -L \
+            -X PATCH \
+            -H "Accept: application/vnd.github+json" \
+            -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
+            -H "X-GitHub-Api-Version: 2022-11-28" \
+            https://api.github.com/repos/${{ github.repository }}/issues/${{ github.event.issue.number }} \
+            -d '{"state":"closed"}'
+
+          exit 1
+
+  build:
+    needs: check_title
+    strategy:
+      matrix:
+        include:
+          - os: linux
+            osrid: linux
+            vm: ubuntu-latest
+            buildscript: ./build.sh
+            propertyswitch: '-'
+          - os: windows
+            osrid: win
+            vm: windows-latest
+            buildscript: .\build.cmd
+            propertyswitch: '/'
+    runs-on: ${{ matrix.vm }}
+    steps:
+      - name: Install dependencies
+        if: ${{ matrix.os == 'linux' }}
+        run: sudo apt-get install --no-install-recommends -y libkrb5-dev liblttng-ust-dev ninja-build libicu-dev libssl-dev
+      - name: Checkout runtime repo
+        uses: actions/checkout@v4
+        with:
+          repository: dotnet/runtime
+          fetch-depth: 0
+          path: runtime
+          show-progress: true
+      - name: Create baseline and compare branches (Linux)
+        if: ${{ matrix.os == 'linux' }}
+        run: cd runtime && git -c protocol.version=2 fetch --progress origin pull/${{ github.event.issue.title }}/head:compare && git branch baseline $(git merge-base compare main)
+      - name: Create baseline and compare branches (Windows)
+        if: ${{ matrix.os == 'windows' }}
+        shell: cmd
+        run: |
+          cd runtime
+          git -c protocol.version=2 fetch --progress origin pull/${{ github.event.issue.title }}/head:compare
+          for /f "tokens=*" %%i in ('git merge-base compare main') do set BASELINE_COMMIT=%%i
+          git branch baseline %BASELINE_COMMIT%
+      - name: Build baseline
+        run: |
+          cd runtime
+          git checkout baseline
+          git rev-parse HEAD
+          ${{ matrix.buildscript }} clr.aot+libs.native+libs.sfx -c Release ${{ matrix.propertyswitch }}p:RunAnalyzers=false
+      - uses: actions/upload-artifact@v4
+        with:
+          name: baseline-${{ matrix.os }}
+          retention-days: 1
+          path: |
+            runtime/artifacts/bin/coreclr/${{ matrix.os }}.x64.Release/aotsdk
+            runtime/artifacts/bin/coreclr/${{ matrix.os }}.x64.Release/ilc-published
+            runtime/artifacts/bin/microsoft.netcore.app.runtime.${{ matrix.osrid }}-x64/Release/runtimes/${{ matrix.osrid }}-x64/lib/net9.0
+            runtime/artifacts/bin/microsoft.netcore.app.runtime.${{ matrix.osrid }}-x64/Release/runtimes/${{ matrix.osrid }}-x64/native
+      - name: Build compare
+        run: |
+          cd runtime
+          git checkout compare
+          git rev-parse HEAD
+          ${{ matrix.buildscript }} clr.aot+libs.native+libs.sfx -c Release ${{ matrix.propertyswitch }}p:RunAnalyzers=false
+      - uses: actions/upload-artifact@v4
+        with:
+          name: compare-${{ matrix.os }}
+          retention-days: 1
+          path: |
+            runtime/artifacts/bin/coreclr/${{ matrix.os }}.x64.Release/aotsdk
+            runtime/artifacts/bin/coreclr/${{ matrix.os }}.x64.Release/ilc-published
+            runtime/artifacts/bin/microsoft.netcore.app.runtime.${{ matrix.osrid }}-x64/Release/runtimes/${{ matrix.osrid }}-x64/lib/net9.0
+            runtime/artifacts/bin/microsoft.netcore.app.runtime.${{ matrix.osrid }}-x64/Release/runtimes/${{ matrix.osrid }}-x64/native
+
+  dotnet:
+    needs: build
+    strategy:
+      matrix:
+        os: [linux, windows]
+        flavor: [baseline, compare]
+        project:
+          - hello
+          - webapiaot
+        include:
+          - os: linux
+            osrid: linux
+            vm: ubuntu-latest
+          - os: windows
+            osrid: win
+            vm: windows-latest
+    runs-on: ${{ matrix.vm }}
+    steps:
+      - name: Install .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 9
+          dotnet-quality: daily
+      - name: Checkout repo
+        uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          name: ${{ matrix.flavor }}-${{ matrix.os }}
+      - name: Publish (Linux)
+        if: ${{ matrix.os == 'linux' }}
+        run: |
+          chmod +x $GITHUB_WORKSPACE/coreclr/linux.x64.Release/ilc-published/ilc
+          cd src/${{ matrix.project }}
+          dotnet publish -p:IlcToolsPath=$GITHUB_WORKSPACE/coreclr/linux.x64.Release/ilc-published/ -p:IlcSdkPath=$GITHUB_WORKSPACE/coreclr/linux.x64.Release/aotsdk/ -p:IlcFrameworkPath=$GITHUB_WORKSPACE/microsoft.netcore.app.runtime.linux-x64/Release/runtimes/linux-x64/lib/net9.0/ -p:IlcFrameworkNativePath=$GITHUB_WORKSPACE/microsoft.netcore.app.runtime.linux-x64/Release/runtimes/linux-x64/native/ -p:IlcGenerateMstatFile=true -p:IlcGenerateDgmlFile=true -p:IlcGenerateMapFile=true
+      - name: Publish (Windows)
+        if: ${{ matrix.os == 'windows' }}
+        shell: cmd
+        run: |
+          cd src\${{ matrix.project }}
+          dotnet publish -p:IlcToolsPath=%GITHUB_WORKSPACE%\coreclr\windows.x64.Release\ilc-published\ -p:IlcSdkPath=%GITHUB_WORKSPACE%\coreclr\windows.x64.Release\aotsdk\ -p:IlcFrameworkPath=%GITHUB_WORKSPACE%\microsoft.netcore.app.runtime.win-x64\Release\runtimes\win-x64\lib\net9.0\ -p:IlcFrameworkNativePath=%GITHUB_WORKSPACE%\microsoft.netcore.app.runtime.win-x64\Release\runtimes\win-x64\native\ -p:IlcGenerateMstatFile=true -p:IlcGenerateDgmlFile=true -p:IlcGenerateMapFile=true
+      - uses: actions/upload-artifact@v4
+        id: artifact-upload-step
+        with:
+          retention-days: 90
+          name: logs-${{ matrix.project }}-${{ matrix.flavor }}-${{ matrix.os }}
+          path: |
+            src/${{ matrix.project }}/obj/Release/net9.0/${{ matrix.osrid }}-x64/native/${{ matrix.project }}.mstat
+            src/${{ matrix.project }}/obj/Release/net9.0/${{ matrix.osrid }}-x64/native/${{ matrix.project }}.map.xml
+            src/${{ matrix.project }}/obj/Release/net9.0/${{ matrix.osrid }}-x64/native/*.dgml.xml
+      - name: Log stats (Linux)
+        if: ${{ matrix.os == 'linux' }}
+        run: |
+          echo -n '${{ steps.artifact-upload-step.outputs.artifact-url }} ' > ${{ matrix.project }}-${{ matrix.os }}.${{ matrix.flavor }}.txt
+          stat -c%s src/${{ matrix.project }}/bin/Release/net9.0/linux-x64/native/${{ matrix.project }} >> ${{ matrix.project }}-${{ matrix.os }}.${{ matrix.flavor }}.txt
+          ls -la src/${{ matrix.project }}/bin/Release/net9.0/linux-x64/native/
+      - name: Log stats (Windows)
+        if: ${{ matrix.os == 'windows' }}
+        shell: cmd
+        run: |
+          FOR /F "usebackq" %%A IN ('src\${{ matrix.project }}\bin\Release\net9.0\win-x64\native\${{ matrix.project }}.exe') DO set SIZE=%%~zA
+          <nul set /p="${{ steps.artifact-upload-step.outputs.artifact-url }} %SIZE%" > ${{ matrix.project }}-${{ matrix.os }}.${{ matrix.flavor }}.txt
+          echo Size is %SIZE%
+          dir src\${{ matrix.project }}\bin\Release\net9.0\win-x64\native\
+      - uses: actions/upload-artifact@v4
+        with:
+          retention-days: 1
+          name: summary-${{ matrix.project }}-${{ matrix.os }}-${{ matrix.flavor }}
+          path: ${{ matrix.project }}-${{ matrix.os }}.${{ matrix.flavor }}.txt
+
+  summarize:
+    needs: dotnet
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: summary-*
+          merge-multiple: true
+      - run: |
+          echo -n '{"body":"# Size statistics\n\n' > table.txt
+          echo -n "Pull request dotnet/runtime#${{ github.event.issue.title }}\n\n" >> table.txt
+          echo -n "| Project | Size before | Size after | Difference |\n" >> table.txt
+          echo -n "|---------|-------------|------------|------------|\n" >> table.txt
+          for file in *.baseline.txt; do
+            projectname=${file%.baseline.txt}
+              read -r url1 num1 < "$file" || true
+              read -r url2 num2 < "$projectname.compare.txt" || true
+              diff=$((num1 - num2))
+              echo -n "| $projectname | [ $num1 ]($url1) | [ $num2 ]($url2) | $diff |\n" >> table.txt
+          done
+          echo -n '"}' >> table.txt
+
+          cat table.txt
+          cat table.txt
+          cat table.txt
+          cat table.txt
+          cat table.txt
+          cat table.txt
+          cat table.txt
+          cat table.txt
+          cat table.txt
+
+          curl \
+            -X POST \
+            -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
+            -H "Content-Type: application/json" \
+            https://api.github.com/repos/${{ github.repository }}/issues/${{ github.event.issue.number }}/comments \
+            -d @table.txt
+
+          curl -L \
+            -X PATCH \
+            -H "Accept: application/vnd.github+json" \
+            -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
+            -H "X-GitHub-Api-Version: 2022-11-28" \
+            https://api.github.com/repos/${{ github.repository }}/issues/${{ github.event.issue.number }} \
+            -d '{"state":"closed"}'
