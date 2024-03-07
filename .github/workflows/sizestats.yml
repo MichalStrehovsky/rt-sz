@@ -106,6 +106,7 @@ jobs:
         flavor: [baseline, compare]
         project:
           - hello
+          - hello-minimal
           - webapiaot
         include:
           - os: linux
@@ -190,14 +191,7 @@ jobs:
           echo -n '"}' >> table.txt
 
           cat table.txt
-          cat table.txt
-          cat table.txt
-          cat table.txt
-          cat table.txt
-          cat table.txt
-          cat table.txt
-          cat table.txt
-          cat table.txt
+          echo
 
           curl \
             -X POST \
