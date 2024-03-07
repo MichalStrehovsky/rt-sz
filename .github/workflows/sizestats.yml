@@ -184,7 +184,7 @@ jobs:
             projectname=${file%.baseline.txt}
               read -r url1 num1 < "$file" || true
               read -r url2 num2 < "$projectname.compare.txt" || true
-              diff=$((num1 - num2))
+              diff=$((num2 - num1))
               echo -n "| $projectname | [ $num1 ]($url1) | [ $num2 ]($url2) | $diff |\n" >> table.txt
           done
           echo -n '"}' >> table.txt
