@@ -108,6 +108,7 @@ jobs:
           - hello
           - hello-minimal
           - webapiaot
+          - avalonia.app
         include:
           - os: linux
             osrid: linux
