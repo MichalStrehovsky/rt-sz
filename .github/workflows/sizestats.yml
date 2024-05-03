@@ -39,11 +39,11 @@ jobs:
             vm: ubuntu-latest
             buildscript: ./build.sh
             propertyswitch: '-'
-#          - os: windows
-#            osrid: win
-#            vm: windows-latest
-#            buildscript: .\build.cmd
-#            propertyswitch: '/'
+          - os: windows
+            osrid: win
+            vm: windows-latest
+            buildscript: .\build.cmd
+            propertyswitch: '/'
     runs-on: ${{ matrix.vm }}
     steps:
       - name: Install dependencies
@@ -102,8 +102,7 @@ jobs:
     needs: build
     strategy:
       matrix:
-#        os: [linux, windows]
-        os: [linux]
+        os: [linux, windows]
         flavor: [baseline, compare]
         project:
           - hello
@@ -114,9 +113,9 @@ jobs:
           - os: linux
             osrid: linux
             vm: ubuntu-latest
-#          - os: windows
-#            osrid: win
-#            vm: windows-latest
+          - os: windows
+            osrid: win
+            vm: windows-latest
     runs-on: ${{ matrix.vm }}
     steps:
       - name: Install .NET
