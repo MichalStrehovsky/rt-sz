@@ -109,6 +109,8 @@ jobs:
           - hello-minimal
           - webapiaot
           - avalonia.app
+          - reflection
+          - kestrel-minimal
         include:
           - os: linux
             osrid: linux
