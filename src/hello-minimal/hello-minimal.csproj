@@ -10,9 +10,6 @@
     <OptimizationPreference>Size</OptimizationPreference>
     <StackTraceSupport>false</StackTraceSupport>
     <UseSystemResourceKeys>true</UseSystemResourceKeys>
-
-    <!-- Temporary for https://github.com/dotnet/runtime/pull/101969 -->
-    <IlcFoldIdenticalMethodBodies>true</IlcFoldIdenticalMethodBodies>
   </PropertyGroup>
 
 </Project>
