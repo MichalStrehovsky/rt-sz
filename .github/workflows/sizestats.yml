@@ -111,7 +111,6 @@ jobs:
           - avalonia.app
           - reflection
           - kestrel-minimal
-          - winrt-component-full
         include:
           - os: linux
             osrid: linux
