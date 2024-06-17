@@ -187,8 +187,6 @@ jobs:
           dotnet-quality: daily
       - name: Checkout repo
         uses: actions/checkout@v4
-      - name: Add msbuild to PATH
-        uses: microsoft/setup-msbuild@v2
       - uses: actions/download-artifact@v4
         with:
           name: ${{ matrix.flavor }}-windows
@@ -196,7 +194,7 @@ jobs:
         shell: cmd
         run: |
           cd src\${{ matrix.project }}
-          msbuild /restore -t:publish /p:Configuration=Release /p:Platform=x64 /p:RuntimeIdentifier=win-x64 -p:IlcToolsPath=%GITHUB_WORKSPACE%\coreclr\windows.x64.Release\ilc-published\ -p:IlcSdkPath=%GITHUB_WORKSPACE%\coreclr\windows.x64.Release\aotsdk\ -p:IlcFrameworkPath=%GITHUB_WORKSPACE%\microsoft.netcore.app.runtime.win-x64\Release\runtimes\win-x64\lib\net9.0\ -p:IlcFrameworkNativePath=%GITHUB_WORKSPACE%\microsoft.netcore.app.runtime.win-x64\Release\runtimes\win-x64\native\ -p:IlcGenerateMstatFile=true -p:IlcGenerateDgmlFile=true -p:IlcGenerateMapFile=true
+          dotnet msbuild /restore -t:publish /p:Configuration=Release /p:Platform=x64 /p:RuntimeIdentifier=win-x64 -p:IlcToolsPath=%GITHUB_WORKSPACE%\coreclr\windows.x64.Release\ilc-published\ -p:IlcSdkPath=%GITHUB_WORKSPACE%\coreclr\windows.x64.Release\aotsdk\ -p:IlcFrameworkPath=%GITHUB_WORKSPACE%\microsoft.netcore.app.runtime.win-x64\Release\runtimes\win-x64\lib\net9.0\ -p:IlcFrameworkNativePath=%GITHUB_WORKSPACE%\microsoft.netcore.app.runtime.win-x64\Release\runtimes\win-x64\native\ -p:IlcGenerateMstatFile=true -p:IlcGenerateDgmlFile=true -p:IlcGenerateMapFile=true
       - uses: actions/upload-artifact@v4
         id: artifact-upload-step
         with:

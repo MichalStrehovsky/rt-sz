@@ -5,6 +5,9 @@
     <Platforms>x64;arm64</Platforms>
     <Nullable>enable</Nullable>
     <AssemblyName>winrt_component_full</AssemblyName>
+
+    <!-- Enable building with 'dotnet msbuild' -->
+    <EnableMsixTooling>true</EnableMsixTooling>
       
     <!-- CsWinRT settings -->
     <WindowsSdkPackageVersion>10.0.22621.35-preview</WindowsSdkPackageVersion>
@@ -17,6 +20,9 @@
     <OptimizationPreference>Size</OptimizationPreference>
     <StackTraceSupport>false</StackTraceSupport>
     <UseSystemResourceKeys>true</UseSystemResourceKeys>
+
+    <!-- Workaround for a .NET 9 SDK issue -->
+    <SelfContained>true</SelfContained>
   </PropertyGroup>
 
   <ItemGroup>
