@@ -23,6 +23,9 @@
 
     <!-- Workaround for a .NET 9 SDK issue -->
     <SelfContained>true</SelfContained>
+
+    <!-- Suppress some expected warnings from exposed APIs -->
+    <NoWarn>$(NoWarn);CS0618;CS0067</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>
