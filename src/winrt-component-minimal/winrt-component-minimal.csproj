@@ -4,10 +4,16 @@
     <TargetFramework>net9.0-windows10.0.22621.0</TargetFramework>
     <Platforms>x64;arm64</Platforms>
     <Nullable>enable</Nullable>
+    <AssemblyName>winrt_component_minimal</AssemblyName>
+
+    <!-- Enable building with 'dotnet msbuild' -->
+    <EnableMsixTooling>true</EnableMsixTooling>
       
     <!-- CsWinRT settings -->
     <WindowsSdkPackageVersion>10.0.22621.35-preview</WindowsSdkPackageVersion>
     <CsWinRTComponent>true</CsWinRTComponent>
+      
+    <!-- CsWinRT size saving settings -->
     <CsWinRTEnableDynamicObjectsSupport>false</CsWinRTEnableDynamicObjectsSupport>
     <CsWinRTUseExceptionResourceKeys>true</CsWinRTUseExceptionResourceKeys>
     <CsWinRTEnableDefaultCustomTypeMappings>false</CsWinRTEnableDefaultCustomTypeMappings>
@@ -22,6 +28,9 @@
     <OptimizationPreference>Size</OptimizationPreference>
     <StackTraceSupport>false</StackTraceSupport>
     <UseSystemResourceKeys>true</UseSystemResourceKeys>
+
+    <!-- Workaround for a .NET 9 SDK issue -->
+    <SelfContained>true</SelfContained>
   </PropertyGroup>
 
   <ItemGroup>

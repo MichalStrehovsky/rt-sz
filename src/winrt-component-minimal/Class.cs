@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace hello_minimal_winrt;
+namespace winrt_component_minimal;
 
 public sealed partial class Class
 {
