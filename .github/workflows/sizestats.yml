@@ -201,7 +201,7 @@ jobs:
         id: artifact-upload-step
         with:
           retention-days: 90
-          name: logs-${{ matrix.project }}-${{ matrix.flavor }}-windows
+          name: logs-${{ matrix.project.name }}-${{ matrix.flavor }}-windows
           path: |
             src/${{ matrix.project.name }}/obj/x64/Release/net9.0-windows10.0.22621.0/win-x64/native/${{ matrix.project.name }}.mstat
             src/${{ matrix.project.name }}/obj/x64/Release/net9.0-windows10.0.22621.0/win-x64/native/${{ matrix.project.name }}.map.xml
