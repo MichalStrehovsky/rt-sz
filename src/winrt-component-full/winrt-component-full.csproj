@@ -16,10 +16,6 @@
     <!-- Size saving settings -->
     <PublishAot>true</PublishAot>
     <NativeLib>Shared</NativeLib>
-    <InvariantGlobalization>true</InvariantGlobalization>
-    <OptimizationPreference>Size</OptimizationPreference>
-    <StackTraceSupport>false</StackTraceSupport>
-    <UseSystemResourceKeys>true</UseSystemResourceKeys>
 
     <!-- Workaround for a .NET 9 SDK issue -->
     <SelfContained>true</SelfContained>
