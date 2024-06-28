@@ -1,0 +1,40 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net9.0-windows10.0.22621.0</TargetFramework>
+    <Platforms>x64;arm64</Platforms>
+    <Nullable>enable</Nullable>
+    <AssemblyName>winrt_component_minimal</AssemblyName>
+
+    <!-- Enable building with 'dotnet msbuild' -->
+    <EnableMsixTooling>true</EnableMsixTooling>
+      
+    <!-- CsWinRT settings -->
+    <WindowsSdkPackageVersion>10.0.22621.35-preview</WindowsSdkPackageVersion>
+    <CsWinRTComponent>true</CsWinRTComponent>
+      
+    <!-- CsWinRT size saving settings -->
+    <CsWinRTEnableDynamicObjectsSupport>false</CsWinRTEnableDynamicObjectsSupport>
+    <CsWinRTUseExceptionResourceKeys>true</CsWinRTUseExceptionResourceKeys>
+    <CsWinRTEnableDefaultCustomTypeMappings>false</CsWinRTEnableDefaultCustomTypeMappings>
+    <CsWinRTEnableICustomPropertyProviderSupport>false</CsWinRTEnableICustomPropertyProviderSupport>
+    <CsWinRTEnableIReferenceSupport>false</CsWinRTEnableIReferenceSupport>
+    <CsWinRTEnableIDynamicInterfaceCastableSupport>false</CsWinRTEnableIDynamicInterfaceCastableSupport>
+
+    <!-- Size saving settings -->
+    <PublishAot>true</PublishAot>
+    <NativeLib>Shared</NativeLib>
+    <InvariantGlobalization>true</InvariantGlobalization>
+    <OptimizationPreference>Size</OptimizationPreference>
+    <StackTraceSupport>false</StackTraceSupport>
+    <UseSystemResourceKeys>true</UseSystemResourceKeys>
+
+    <!-- Workaround for a .NET 9 SDK issue -->
+    <SelfContained>true</SelfContained>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Windows.CsWinRT" Version="2.1.0-prerelease.240602.1" />
+  </ItemGroup>
+
+</Project>
