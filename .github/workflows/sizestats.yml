@@ -48,7 +48,9 @@ jobs:
     steps:
       - name: Install dependencies
         if: ${{ matrix.os == 'linux' }}
-        run: sudo apt-get install --no-install-recommends -y libkrb5-dev liblttng-ust-dev ninja-build libicu-dev libssl-dev
+        run: |
+          sudo apt-get update
+          sudo apt-get install --no-install-recommends -y libkrb5-dev liblttng-ust-dev ninja-build libicu-dev libssl-dev
       - name: Checkout runtime repo
         uses: actions/checkout@v4
         with:
