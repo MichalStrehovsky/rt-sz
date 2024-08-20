@@ -16,6 +16,8 @@ jobs:
           echo "${{ join(github.event.issue.labels.*.name, ' -p:') }}"
           echo "toJson"
           echo "${{ toJson(github.event.issue.labels) }}"
+          echo "Composed"
+          echo "${{ toJson(github.event.issue.labels) == '[]' && ('-p:' + join(github.event.issue.labels.*.name, ' -p:')) || '' }}"
           curl \
             -X POST \
             -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
