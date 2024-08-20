@@ -16,6 +16,8 @@ jobs:
           echo "${{ join(github.event.issue.labels.*.name, ' -p:') }}"
           echo "toJson"
           echo "${{ toJson(github.event.issue.labels) }}"
+          echo "toJson compared"
+          echo "${{ toJson(github.event.issue.labels) == '[]' }}"
           echo "Composed"
           echo "${{ toJson(github.event.issue.labels) == '[]' && '' || format('-p:{0}', join(github.event.issue.labels.*.name, ' -p:')) }}"
           curl \
