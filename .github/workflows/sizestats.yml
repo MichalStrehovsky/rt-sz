@@ -19,7 +19,7 @@ jobs:
           echo "toJson compared"
           echo "${{ toJson(github.event.issue.labels) == '[]' }}"
           echo "Composed"
-          echo "${{ toJson(github.event.issue.labels) == '[]' && '' || format('-p:{0}', join(github.event.issue.labels.*.name, ' -p:')) }}"
+          echo "${{ toJson(github.event.issue.labels) == '[]' && ' ' || format('-p:{0}', join(github.event.issue.labels.*.name, ' -p:')) }}"
           curl \
             -X POST \
             -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
