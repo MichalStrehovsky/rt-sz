@@ -12,6 +12,10 @@ jobs:
       - name: Check title is correct
         if: ${{ !(github.event.issue.title > 0) }}
         run: |
+          echo "Concat result"
+          echo "${{ join(github.event.issue.labels.*.name, ' -p:') }}"
+          echo "toJson"
+          echo "${{ toJson(github.event.issue.labels) }}"
           curl \
             -X POST \
             -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
