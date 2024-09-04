@@ -180,8 +180,8 @@ jobs:
       matrix:
         flavor: [baseline, compare]
         project: [
-          #{ name: winrt-component-full, binary: winrt_component_full.dll },
-          #{ name: winrt-component-minimal, binary: winrt_component_minimal.dll }
+          { name: winrt-component-full, binary: winrt_component_full.dll },
+          { name: winrt-component-minimal, binary: winrt_component_minimal.dll }
         ]
     runs-on: windows-latest
     steps:
@@ -196,32 +196,32 @@ jobs:
       - uses: actions/download-artifact@v4
         with:
           name: ${{ matrix.flavor }}-windows
-      - name: Publish
-        shell: cmd
-        run: |
-          cd src\${{ matrix.project.name }}
-          dotnet msbuild /restore -t:publish /p:Configuration=Release /p:Platform=x64 /p:RuntimeIdentifier=win-x64 -p:IlcToolsPath=%GITHUB_WORKSPACE%\coreclr\windows.x64.Release\ilc-published\ -p:IlcSdkPath=%GITHUB_WORKSPACE%\coreclr\windows.x64.Release\aotsdk\ -p:IlcFrameworkPath=%GITHUB_WORKSPACE%\microsoft.netcore.app.runtime.win-x64\Release\runtimes\win-x64\lib\net9.0\ -p:IlcFrameworkNativePath=%GITHUB_WORKSPACE%\microsoft.netcore.app.runtime.win-x64\Release\runtimes\win-x64\native\ -p:IlcGenerateMstatFile=true -p:IlcGenerateDgmlFile=true -p:IlcGenerateMapFile=true ${{ toJson(github.event.issue.labels) == '[]' && ' ' || format('-p:{0}', join(github.event.issue.labels.*.name, ' -p:')) }}
-      - uses: actions/upload-artifact@v4
-        id: artifact-upload-step
-        with:
-          retention-days: 90
-          name: logs-${{ matrix.project.name }}-${{ matrix.flavor }}-windows
-          path: |
-            src/${{ matrix.project.name }}/obj/x64/Release/net9.0-windows10.0.22621.0/win-x64/native/${{ matrix.project.name }}.mstat
-            src/${{ matrix.project.name }}/obj/x64/Release/net9.0-windows10.0.22621.0/win-x64/native/${{ matrix.project.name }}.map.xml
-            src/${{ matrix.project.name }}/obj/x64/Release/net9.0-windows10.0.22621.0/win-x64/native/*.dgml.xml
-      - name: Log stats
-        shell: cmd
-        run: |
-          FOR /F "usebackq" %%A IN ('src\${{ matrix.project.name }}\bin\x64\Release\net9.0-windows10.0.22621.0\win-x64\native\${{ matrix.project.binary }}') DO set SIZE=%%~zA
-          <nul set /p="${{ steps.artifact-upload-step.outputs.artifact-url }} %SIZE%" > ${{ matrix.project.name }}-windows.${{ matrix.flavor }}.txt
-          echo Size is %SIZE%
-          dir src\${{ matrix.project.name }}\bin\x64\Release\net9.0-windows10.0.22621.0\win-x64\native\
-      - uses: actions/upload-artifact@v4
-        with:
-          retention-days: 1
-          name: summary-${{ matrix.project.name }}-windows-${{ matrix.flavor }}
-          path: ${{ matrix.project.name }}-windows.${{ matrix.flavor }}.txt
+      #- name: Publish
+      #  shell: cmd
+      #  run: |
+      #    cd src\${{ matrix.project.name }}
+      #    dotnet msbuild /restore -t:publish /p:Configuration=Release /p:Platform=x64 /p:RuntimeIdentifier=win-x64 -p:IlcToolsPath=%GITHUB_WORKSPACE%\coreclr\windows.x64.Release\ilc-published\ -p:IlcSdkPath=%GITHUB_WORKSPACE%\coreclr\windows.x64.Release\aotsdk\ -p:IlcFrameworkPath=%GITHUB_WORKSPACE%\microsoft.netcore.app.runtime.win-x64\Release\runtimes\win-x64\lib\net9.0\ -p:IlcFrameworkNativePath=%GITHUB_WORKSPACE%\microsoft.netcore.app.runtime.win-x64\Release\runtimes\win-x64\native\ -p:IlcGenerateMstatFile=true -p:IlcGenerateDgmlFile=true -p:IlcGenerateMapFile=true ${{ toJson(github.event.issue.labels) == '[]' && ' ' || format('-p:{0}', join(github.event.issue.labels.*.name, ' -p:')) }}
+      #- uses: actions/upload-artifact@v4
+      #  id: artifact-upload-step
+      #  with:
+      #    retention-days: 90
+      #    name: logs-${{ matrix.project.name }}-${{ matrix.flavor }}-windows
+      #    path: |
+      #      src/${{ matrix.project.name }}/obj/x64/Release/net9.0-windows10.0.22621.0/win-x64/native/${{ matrix.project.name }}.mstat
+      #      src/${{ matrix.project.name }}/obj/x64/Release/net9.0-windows10.0.22621.0/win-x64/native/${{ matrix.project.name }}.map.xml
+      #      src/${{ matrix.project.name }}/obj/x64/Release/net9.0-windows10.0.22621.0/win-x64/native/*.dgml.xml
+      #- name: Log stats
+      #  shell: cmd
+      #  run: |
+      #    FOR /F "usebackq" %%A IN ('src\${{ matrix.project.name }}\bin\x64\Release\net9.0-windows10.0.22621.0\win-x64\native\${{ matrix.project.binary }}') DO set SIZE=%%~zA
+      #    <nul set /p="${{ steps.artifact-upload-step.outputs.artifact-url }} %SIZE%" > ${{ matrix.project.name }}-windows.${{ matrix.flavor }}.txt
+      #    echo Size is %SIZE%
+      #    dir src\${{ matrix.project.name }}\bin\x64\Release\net9.0-windows10.0.22621.0\win-x64\native\
+      #- uses: actions/upload-artifact@v4
+      #  with:
+      #    retention-days: 1
+      #    name: summary-${{ matrix.project.name }}-windows-${{ matrix.flavor }}
+      #    path: ${{ matrix.project.name }}-windows.${{ matrix.flavor }}.txt
 
   summarize:
     needs: [dotnet, msbuild]
