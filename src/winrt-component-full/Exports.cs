@@ -1,4 +1,7 @@
-﻿using System;
+﻿using Microsoft.UI.Xaml;
+using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Markup;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Collections.Specialized;
@@ -12,9 +15,6 @@ using System.Runtime.InteropServices.WindowsRuntime;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Input;
-using Microsoft.UI.Xaml;
-using Microsoft.UI.Xaml.Controls;
-using Microsoft.UI.Xaml.Markup;
 using Windows.Foundation;
 using Windows.Foundation.Collections;
 using Windows.Foundation.Metadata;
@@ -22,7 +22,7 @@ using Windows.Graphics.Effects;
 using WinRT;
 using WinRT.Interop;
 
-#pragma warning disable CS8618, CS8629, CS8603, CS8767, CS8601, CS8612, CS8615, CS8769, CS0282
+#pragma warning disable CA1416
 
 namespace winrt_component_full
 {
@@ -94,7 +94,7 @@ namespace winrt_component_full
             return new CustomWWW();
         }
 
-        public BasicStruct GetBasicStruct() =>
+        public BasicStruct GetBasicStruct() => 
             new BasicStruct() { X = 4, Y = 8, Value = "CsWinRT" };
 
         public int GetSumOfInts(BasicStruct basicStruct)
@@ -185,7 +185,7 @@ namespace winrt_component_full
         public bool? Val;
         public BasicStruct BasicStruct;
     }
-
+    
     internal struct PrivateStruct
     {
         public int X, Y;
@@ -196,6 +196,13 @@ namespace winrt_component_full
     {
         public string Name => "CustomWWW";
 
+        public string Value => "CsWinRT";
+    }
+
+    [GeneratedBindableCustomProperty]
+    public sealed partial class CustomProperty
+    {
+        public int Number { get; } = 4;
         public string Value => "CsWinRT";
     }
 
@@ -352,9 +359,9 @@ namespace winrt_component_full
         {
             return new List<ComplexStruct>()
             {
-                new ComplexStruct() {
+                new ComplexStruct() { 
                     X = 12,
-                    Val = true,
+                    Val = true, 
                     BasicStruct = new BasicStruct() { X = 1, Y = 2, Value = "Basic" } },
             };
         }
@@ -670,6 +677,44 @@ namespace winrt_component_full
             return _dictionary.GetEnumerator();
         }
     }
+
+    // Evaluate whether it should be supported - .NET native doesn't.
+    // TODO: conflict with IDisposable
+    /*
+    public sealed class CustomEnumerator : IEnumerator<DisposableClass>
+    {
+        private readonly DisposableClass[] _disposableObjects;
+        private readonly IEnumerator _enumerator;
+
+        public CustomEnumerator()
+        {
+        }
+
+        public CustomEnumerator(DisposableClass[] disposableObjects)
+        {
+            _disposableObjects = disposableObjects;
+            _enumerator = _disposableObjects.GetEnumerator();
+        }
+
+        public DisposableClass Current => (DisposableClass)_enumerator.Current;
+
+        object IEnumerator.Current => _enumerator.Current;
+
+        public void Dispose()
+        {
+        }
+
+        public bool MoveNext()
+        {
+            return _enumerator.MoveNext();
+        }
+
+        public void Reset()
+        {
+            _enumerator.Reset();
+        }
+    }
+    */
 
     public sealed class CustomVector : IList<DisposableClass>
     {
@@ -1066,6 +1111,14 @@ namespace winrt_component_full
         // Tests DefaultOverload attribute specified in projected interface.
         public IXamlType GetXamlType(Type type)
         {
+            if (type == typeof(Nullable<double>) ||
+                type == typeof(TimeSpan?) ||
+                type == typeof(BasicEnum?) ||
+                type == typeof(FlagsEnum?))
+            {
+                return new XamlType(type);
+            }
+
             return null;
         }
 
@@ -1077,6 +1130,72 @@ namespace winrt_component_full
         public XmlnsDefinition[] GetXmlnsDefinitions()
         {
             return null;
+        }
+    }
+
+    internal sealed partial class XamlType : IXamlType
+    {
+        private readonly Type _type;
+
+        public XamlType(Type type)
+        {
+            _type = type;
+        }
+
+        public IXamlType BaseType => new XamlType(_type.BaseType);
+
+        public IXamlType BoxedType => throw new NotImplementedException();
+
+        public IXamlMember ContentProperty => throw new NotImplementedException();
+
+        public string FullName => _type.FullName;
+
+        public bool IsArray => _type.IsArray;
+
+        public bool IsBindable => throw new NotImplementedException();
+
+        public bool IsCollection => throw new NotImplementedException();
+
+        public bool IsConstructible => throw new NotImplementedException();
+
+        public bool IsDictionary => throw new NotImplementedException();
+
+        public bool IsMarkupExtension => throw new NotImplementedException();
+
+        public IXamlType ItemType => throw new NotImplementedException();
+
+        public IXamlType KeyType => throw new NotImplementedException();
+
+        public Type UnderlyingType => throw new NotImplementedException();
+
+        public object ActivateInstance()
+        {
+            throw new NotImplementedException();
+        }
+
+        public void AddToMap(object instance, object key, object value)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void AddToVector(object instance, object value)
+        {
+            throw new NotImplementedException();
+        }
+
+        public object CreateFromString(string value)
+        {
+            throw new NotImplementedException();
+        }
+
+        public IXamlMember GetMember(string name)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void RunInitializer()
+        {
+            throw new NotImplementedException();
         }
     }
 
@@ -1309,7 +1428,7 @@ namespace winrt_component_full
         private List<DisposableClass> _list = new List<DisposableClass>();
 
         DisposableClass IList<DisposableClass>.this[int index] { get => _list[index]; set => _list[index] = value; }
-        object IList.this[int index] { get => _list[index]; set => ((IList)_list)[index] = value; }
+        object IList.this[int index] { get => _list[index]; set => ((IList)_list) [index] = value; }
 
         int ICollection<DisposableClass>.Count => _list.Count;
 
@@ -1323,7 +1442,7 @@ namespace winrt_component_full
 
         bool ICollection.IsSynchronized => true;
 
-        object ICollection.SyncRoot => ((ICollection)_list).SyncRoot;
+        object ICollection.SyncRoot => ((ICollection) _list).SyncRoot;
 
         void ICollection<DisposableClass>.Add(DisposableClass item)
         {
@@ -1332,7 +1451,7 @@ namespace winrt_component_full
 
         int IList.Add(object value)
         {
-            return ((IList)_list).Add(value);
+            return ((IList) _list).Add(value);
         }
 
         void ICollection<DisposableClass>.Clear()
@@ -1352,7 +1471,7 @@ namespace winrt_component_full
 
         bool IList.Contains(object value)
         {
-            return ((IList)_list).Contains(value);
+            return ((IList) _list).Contains(value);
         }
 
         void ICollection<DisposableClass>.CopyTo(DisposableClass[] array, int arrayIndex)
@@ -1362,7 +1481,7 @@ namespace winrt_component_full
 
         void ICollection.CopyTo(Array array, int index)
         {
-            ((ICollection)_list).CopyTo(array, index);
+             ((ICollection) _list).CopyTo(array, index);
         }
 
         IEnumerator<DisposableClass> IEnumerable<DisposableClass>.GetEnumerator()
@@ -1382,7 +1501,7 @@ namespace winrt_component_full
 
         int IList.IndexOf(object value)
         {
-            return ((IList)_list).IndexOf(value);
+            return ((IList) _list).IndexOf(value);
         }
 
         void IList<DisposableClass>.Insert(int index, DisposableClass item)
@@ -1392,7 +1511,7 @@ namespace winrt_component_full
 
         void IList.Insert(int index, object value)
         {
-            ((IList)_list).Insert(index, value);
+            ((IList) _list).Insert(index, value);
         }
 
         bool ICollection<DisposableClass>.Remove(DisposableClass item)
@@ -1402,7 +1521,7 @@ namespace winrt_component_full
 
         void IList.Remove(object value)
         {
-            ((IList)_list).Remove(value);
+            ((IList) _list).Remove(value);
         }
 
         void IList<DisposableClass>.RemoveAt(int index)
@@ -1437,7 +1556,7 @@ namespace winrt_component_full
 
         void ICollection<KeyValuePair<string, int>>.Add(KeyValuePair<string, int> item)
         {
-            ((ICollection<KeyValuePair<string, int>>)_dictionary).Add(item);
+            ((ICollection<KeyValuePair<string, int>>) _dictionary).Add(item);
         }
 
         void ICollection<KeyValuePair<string, int>>.Clear()
@@ -1457,7 +1576,7 @@ namespace winrt_component_full
 
         void ICollection<KeyValuePair<string, int>>.CopyTo(KeyValuePair<string, int>[] array, int arrayIndex)
         {
-            ((ICollection<KeyValuePair<string, int>>)_dictionary).CopyTo(array, arrayIndex);
+            ((ICollection<KeyValuePair<string, int>>) _dictionary).CopyTo(array, arrayIndex);
         }
 
         IEnumerator<KeyValuePair<string, int>> IEnumerable<KeyValuePair<string, int>>.GetEnumerator()
@@ -1477,7 +1596,7 @@ namespace winrt_component_full
 
         bool ICollection<KeyValuePair<string, int>>.Remove(KeyValuePair<string, int> item)
         {
-            return ((ICollection<KeyValuePair<string, int>>)_dictionary).Remove(item);
+            return ((ICollection<KeyValuePair<string, int>>) _dictionary).Remove(item);
         }
 
         bool IDictionary<string, int>.TryGetValue(string key, out int value)

@@ -21,10 +21,11 @@
     <SelfContained>true</SelfContained>
 
     <!-- Suppress some expected warnings from exposed APIs -->
-    <NoWarn>$(NoWarn);CS0618;CS0067</NoWarn>
+    <NoWarn>$(NoWarn);CS0067;CS0282;CS0618;CS8601;CS8603;CS8604;CS8612;CS8615;CS8618;CS8629;CS8767;CS8769</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="Microsoft.Web.WebView2" Version="1.0.2783-prerelease" IncludeAssets="none" />
     <PackageReference Include="Microsoft.Windows.CsWinRT" Version="2.1.3" />
     <PackageReference Include="Microsoft.WindowsAppSDK" Version="1.6.240829007" />
   </ItemGroup>
