@@ -151,23 +151,23 @@ jobs:
           retention-days: 90
           name: logs-${{ matrix.project }}-${{ matrix.flavor }}-${{ matrix.os }}
           path: |
-            src/${{ matrix.project }}/obj/Release/net9.0/${{ matrix.osrid }}-x64/native/${{ matrix.project }}.mstat
-            src/${{ matrix.project }}/obj/Release/net9.0/${{ matrix.osrid }}-x64/native/${{ matrix.project }}.map.xml
-            src/${{ matrix.project }}/obj/Release/net9.0/${{ matrix.osrid }}-x64/native/*.dgml.xml
+            src/${{ matrix.project }}/obj/Release/net10.0/${{ matrix.osrid }}-x64/native/${{ matrix.project }}.mstat
+            src/${{ matrix.project }}/obj/Release/net10.0/${{ matrix.osrid }}-x64/native/${{ matrix.project }}.map.xml
+            src/${{ matrix.project }}/obj/Release/net10.0/${{ matrix.osrid }}-x64/native/*.dgml.xml
       - name: Log stats (Linux)
         if: ${{ matrix.os == 'linux' }}
         run: |
           echo -n '${{ steps.artifact-upload-step.outputs.artifact-url }} ' > ${{ matrix.project }}-${{ matrix.os }}.${{ matrix.flavor }}.txt
-          stat -c%s src/${{ matrix.project }}/bin/Release/net9.0/linux-x64/native/${{ matrix.project }} >> ${{ matrix.project }}-${{ matrix.os }}.${{ matrix.flavor }}.txt
-          ls -la src/${{ matrix.project }}/bin/Release/net9.0/linux-x64/native/
+          stat -c%s src/${{ matrix.project }}/bin/Release/net10.0/linux-x64/native/${{ matrix.project }} >> ${{ matrix.project }}-${{ matrix.os }}.${{ matrix.flavor }}.txt
+          ls -la src/${{ matrix.project }}/bin/Release/net10.0/linux-x64/native/
       - name: Log stats (Windows)
         if: ${{ matrix.os == 'windows' }}
         shell: cmd
         run: |
-          FOR /F "usebackq" %%A IN ('src\${{ matrix.project }}\bin\Release\net9.0\win-x64\native\${{ matrix.project }}.exe') DO set SIZE=%%~zA
+          FOR /F "usebackq" %%A IN ('src\${{ matrix.project }}\bin\Release\net10.0\win-x64\native\${{ matrix.project }}.exe') DO set SIZE=%%~zA
           <nul set /p="${{ steps.artifact-upload-step.outputs.artifact-url }} %SIZE%" > ${{ matrix.project }}-${{ matrix.os }}.${{ matrix.flavor }}.txt
           echo Size is %SIZE%
-          dir src\${{ matrix.project }}\bin\Release\net9.0\win-x64\native\
+          dir src\${{ matrix.project }}\bin\Release\net10.0\win-x64\native\
       - uses: actions/upload-artifact@v4
         with:
           name: summary-${{ matrix.project }}-${{ matrix.os }}-${{ matrix.flavor }}
@@ -176,7 +176,7 @@ jobs:
         with:
           retention-days: 5
           name: binaries-${{ matrix.project }}-${{ matrix.os }}-${{ matrix.flavor }}
-          path: src/${{ matrix.project }}/bin/Release/net9.0/${{ matrix.osrid }}-x64/native/*
+          path: src/${{ matrix.project }}/bin/Release/net10.0/${{ matrix.osrid }}-x64/native/*
   
   msbuild:
     needs: build
@@ -211,16 +211,16 @@ jobs:
           retention-days: 90
           name: logs-${{ matrix.project.name }}-${{ matrix.flavor }}-windows
           path: |
-            src/${{ matrix.project.name }}/obj/x64/Release/net9.0-windows10.0.22621.0/win-x64/native/${{ matrix.project.name }}.mstat
-            src/${{ matrix.project.name }}/obj/x64/Release/net9.0-windows10.0.22621.0/win-x64/native/${{ matrix.project.name }}.map.xml
-            src/${{ matrix.project.name }}/obj/x64/Release/net9.0-windows10.0.22621.0/win-x64/native/*.dgml.xml
+            src/${{ matrix.project.name }}/obj/x64/Release/net10.0-windows10.0.22621.0/win-x64/native/${{ matrix.project.name }}.mstat
+            src/${{ matrix.project.name }}/obj/x64/Release/net10.0-windows10.0.22621.0/win-x64/native/${{ matrix.project.name }}.map.xml
+            src/${{ matrix.project.name }}/obj/x64/Release/net10.0-windows10.0.22621.0/win-x64/native/*.dgml.xml
       - name: Log stats
         shell: cmd
         run: |
-          FOR /F "usebackq" %%A IN ('src\${{ matrix.project.name }}\bin\x64\Release\net9.0-windows10.0.22621.0\win-x64\native\${{ matrix.project.binary }}') DO set SIZE=%%~zA
+          FOR /F "usebackq" %%A IN ('src\${{ matrix.project.name }}\bin\x64\Release\net10.0-windows10.0.22621.0\win-x64\native\${{ matrix.project.binary }}') DO set SIZE=%%~zA
           <nul set /p="${{ steps.artifact-upload-step.outputs.artifact-url }} %SIZE%" > ${{ matrix.project.name }}-windows.${{ matrix.flavor }}.txt
           echo Size is %SIZE%
-          dir src\${{ matrix.project.name }}\bin\x64\Release\net9.0-windows10.0.22621.0\win-x64\native\
+          dir src\${{ matrix.project.name }}\bin\x64\Release\net10.0-windows10.0.22621.0\win-x64\native\
       - uses: actions/upload-artifact@v4
         with:
           name: summary-${{ matrix.project.name }}-windows-${{ matrix.flavor }}
@@ -229,7 +229,7 @@ jobs:
         with:
           retention-days: 5
           name: binaries-${{ matrix.project.name }}-windows-${{ matrix.flavor }}
-          path: src/${{ matrix.project.name }}/bin/x64/Release/net9.0-windows10.0.22621.0/win-x64/native/*
+          path: src/${{ matrix.project.name }}/bin/x64/Release/net10.0-windows10.0.22621.0/win-x64/native/*
 
   summarize:
     needs: [dotnet, msbuild]
