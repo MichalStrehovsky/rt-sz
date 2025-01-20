@@ -1,5 +1,6 @@
 ﻿using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Data;
 using Microsoft.UI.Xaml.Markup;
 using System;
 using System.Collections;
@@ -204,6 +205,103 @@ namespace winrt_component_full
     {
         public int Number { get; } = 4;
         public string Value => "CsWinRT";
+    }
+
+    [GeneratedBindableCustomProperty]
+    public partial struct CustomPropertyStructType
+    {
+        // Public WinRT struct types must have at least one field
+        public int Dummy;
+
+        public int Number => 4;
+        public string Value => "CsWinRTFromStructType";
+    }
+
+    [GeneratedBindableCustomProperty]
+    internal sealed partial record CustomPropertyRecordType
+    {
+        public int Number { get; } = 4;
+        public string Value => "CsWinRTFromRecordType";
+    }
+
+    [GeneratedBindableCustomProperty]
+    internal partial record struct CustomPropertyRecordStructType
+    {
+        public int Number => 4;
+        public string Value => "CsWinRTFromRecordStructType";
+    }
+
+    public static class CustomPropertyRecordTypeFactory
+    {
+        public static object CreateStruct() => new CustomPropertyStructType();
+        
+        public static object CreateRecord() => new CustomPropertyRecordType();
+
+        public static object CreateRecordStruct() => default(CustomPropertyRecordStructType);
+    }
+
+    public sealed partial class CustomPropertyProviderWithExplicitImplementation : ICustomPropertyProvider
+    {
+        public Type Type => typeof(CustomPropertyProviderWithExplicitImplementation);
+
+        public ICustomProperty GetCustomProperty(string name)
+        {
+            if (name == "TestCustomProperty")
+            {
+                return new CustomPropertyWithExplicitImplementation();
+            }
+
+            return null;
+        }
+
+        public ICustomProperty GetIndexedProperty(string name, Type type)
+        {
+            return null;
+        }
+
+        public string GetStringRepresentation()
+        {
+            return string.Empty;
+        }
+    }
+
+    public sealed partial class CustomPropertyWithExplicitImplementation : ICustomProperty
+    {
+        internal CustomPropertyWithExplicitImplementation()
+        {
+        }
+
+        public bool CanRead => true;
+
+        public bool CanWrite => false;
+
+        public string Name => "TestCustomProperty";
+
+        public Type Type => typeof(CustomPropertyWithExplicitImplementation);
+
+        /// <inheritdoc />
+        public object GetIndexedValue(object target, object index)
+        {
+            throw new NotSupportedException();
+        }
+
+        /// <inheritdoc />
+        public object GetValue(object target)
+        {
+            return "TestPropertyValue";
+        }
+
+        /// <inheritdoc />
+        public void SetIndexedValue(object target, object value, object index)
+        {
+            throw new NotSupportedException();
+        }
+
+        /// <inheritdoc />
+        public void SetValue(object target, object value)
+        {
+            throw new NotSupportedException();
+        }
     }
 
     [Version(3u)]
@@ -1852,6 +1950,61 @@ namespace winrt_component_full
                     }
                 }
             }
+        }
+    }
+
+    [System.Runtime.InteropServices.Guid("26D8EE57-8B1B-46F4-A4F9-8C6DEEEAF53A")]
+    public interface ICustomInterfaceGuid
+    {
+        string HelloWorld();
+    }
+
+    public sealed class CustomInterfaceGuidClass : ICustomInterfaceGuid
+    {
+        public string HelloWorld() => "Hello World!";
+    }
+
+    public sealed class NonActivatableType
+    {
+        private readonly string _text;
+
+        // This should not be referenced by the generated activation factory
+        internal NonActivatableType(string text)
+        {
+            _text = text;
+        }
+
+        public string GetText()
+        {
+            return _text;
+        }
+    }
+
+    public static class NonActivatableFactory
+    {
+        public static NonActivatableType Create()
+        {
+            return new("Test123");
+        }
+    }
+
+    public sealed class TypeOnlyActivatableViaItsOwnFactory
+    {
+        private readonly string _text;
+
+        private TypeOnlyActivatableViaItsOwnFactory(string text)
+        {
+            _text = text;
+        }
+
+        public static TypeOnlyActivatableViaItsOwnFactory Create()
+        {
+            return new("Hello!");
+        }
+
+        public string GetText()
+        {
+            return _text;
         }
     }
 }
