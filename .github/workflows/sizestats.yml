@@ -107,7 +107,8 @@ jobs:
     needs: build
     strategy:
       matrix:
-        os: [linux, windows]
+#        os: [linux, windows]
+        os: [windows]
         flavor: [baseline, compare]
         project:
           - hello
@@ -117,9 +118,9 @@ jobs:
           - reflection
           - kestrel-minimal
         include:
-          - os: linux
-            osrid: linux
-            vm: ubuntu-latest
+#          - os: linux
+#            osrid: linux
+#            vm: ubuntu-latest
           - os: windows
             osrid: win
             vm: windows-latest
@@ -214,8 +215,8 @@ jobs:
           retention-days: 90
           name: logs-${{ matrix.project.name }}-${{ matrix.flavor }}-windows
           path: |
-            src/${{ matrix.project.name }}/obj/x64/Release/net10.0-windows10.0.22621.0/win-x64/native/${{ matrix.project.name }}.mstat
-            src/${{ matrix.project.name }}/obj/x64/Release/net10.0-windows10.0.22621.0/win-x64/native/${{ matrix.project.name }}.map.xml
+            src/${{ matrix.project.name }}/obj/x64/Release/net10.0-windows10.0.22621.0/win-x64/native/${{ matrix.project.binary }}.mstat
+            src/${{ matrix.project.name }}/obj/x64/Release/net10.0-windows10.0.22621.0/win-x64/native/${{ matrix.project.binary }}.map.xml
             src/${{ matrix.project.name }}/obj/x64/Release/net10.0-windows10.0.22621.0/win-x64/native/*.dgml.xml
       - name: Log stats
         shell: cmd
