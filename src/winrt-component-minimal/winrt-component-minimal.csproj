@@ -10,8 +10,9 @@
     <EnableMsixTooling>true</EnableMsixTooling>
       
     <!-- CsWinRT settings -->
-    <WindowsSdkPackageVersion>10.0.22621.45</WindowsSdkPackageVersion>
+    <WindowsSdkPackageVersion>10.0.22621.56</WindowsSdkPackageVersion>
     <CsWinRTComponent>true</CsWinRTComponent>
+    <CsWinRTGenerateProjection>false</CsWinRTGenerateProjection>
       
     <!-- CsWinRT size saving settings -->
     <CsWinRTEnableDynamicObjectsSupport>false</CsWinRTEnableDynamicObjectsSupport>
@@ -34,7 +35,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.Windows.CsWinRT" Version="2.1.3" />
+    <PackageReference Include="Microsoft.Windows.CsWinRT" Version="2.2.0" />
   </ItemGroup>
 
 </Project>
