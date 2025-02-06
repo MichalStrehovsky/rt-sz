@@ -107,7 +107,8 @@ jobs:
     needs: build
     strategy:
       matrix:
-        os: [linux, windows]
+        os: [windows]
+#        os: [linux, windows]
         flavor: [baseline, compare]
         project:
           - hello
@@ -117,9 +118,9 @@ jobs:
           - reflection
           - kestrel-minimal
         include:
-          - os: linux
-            osrid: linux
-            vm: ubuntu-latest
+#          - os: linux
+#            osrid: linux
+#            vm: ubuntu-latest
           - os: windows
             osrid: win
             vm: windows-latest
