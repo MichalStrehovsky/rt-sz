@@ -117,6 +117,7 @@ jobs:
           - avalonia.app
           - reflection
           - kestrel-minimal
+          - TodosApi
         include:
 #          - os: linux
 #            osrid: linux

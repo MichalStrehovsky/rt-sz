@@ -1,0 +1,72 @@
+@TodosApi_HostAddress = http://localhost:5054
+# Uncomment following line if sending requests to published app
+#@TodosApi_HostAddress = http://localhost:5000
+
+# For more info on HTTP files go to https://aka.ms/vs/httpfile
+
+Get {{TodosApi_HostAddress}}/api/todos/
+Accept: application/json
+
+###
+
+Get {{TodosApi_HostAddress}}/api/todos/incomplete
+Accept: application/json
+
+###
+
+Get {{TodosApi_HostAddress}}/api/todos/complete
+Accept: application/json
+
+###
+
+Post {{TodosApi_HostAddress}}/api/todos/
+Content-Type: application/json
+Accept: application/json
+
+{ "title" : "Update the stage 2 app" }
+
+###
+
+Get {{TodosApi_HostAddress}}/api/todos/619
+Accept: application/json
+
+###
+
+Put {{TodosApi_HostAddress}}/api/todos/619
+Content-Type: application/json
+Accept: application/json
+
+{ "title" : "Update the stage 2 app - changed" }
+
+###
+
+Put {{TodosApi_HostAddress}}/api/todos/619/mark-complete
+Accept: application/json
+
+###
+
+Put {{TodosApi_HostAddress}}/api/todos/619/mark-incomplete
+Accept: application/json
+
+###
+
+Delete {{TodosApi_HostAddress}}/api/todos/619
+Accept: application/json
+
+###
+
+Get {{TodosApi_HostAddress}}/api/todos/find?title=wash+the+dishes.
+Accept: application/json
+
+###
+
+Get {{TodosApi_HostAddress}}/throw
+Accept: application/json
+
+###
+
+Delete {{TodosApi_HostAddress}}/api/todos/delete-all
+Accept: application/json 
+Authorization: Bearer <put a JWT here>
+
+###
