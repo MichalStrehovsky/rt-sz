@@ -34,11 +34,11 @@ jobs:
     strategy:
       matrix:
         include:
-          - os: linux
-            osrid: linux
-            vm: ubuntu-latest
-            buildscript: ./build.sh
-            propertyswitch: '-'
+#          - os: linux
+#            osrid: linux
+#            vm: ubuntu-latest
+#            buildscript: ./build.sh
+#            propertyswitch: '-'
           - os: windows
             osrid: win
             vm: windows-latest
