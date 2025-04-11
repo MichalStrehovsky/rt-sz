@@ -34,11 +34,11 @@ jobs:
     strategy:
       matrix:
         include:
-#          - os: linux
-#            osrid: linux
-#            vm: ubuntu-latest
-#            buildscript: ./build.sh
-#            propertyswitch: '-'
+          - os: linux
+            osrid: linux
+            vm: ubuntu-latest
+            buildscript: ./build.sh
+            propertyswitch: '-'
           - os: windows
             osrid: win
             vm: windows-latest
@@ -74,7 +74,7 @@ jobs:
           cd runtime
           git checkout baseline
           git rev-parse HEAD
-          ${{ matrix.buildscript }} clr.aot+libs.native+libs.sfx -c Release ${{ matrix.propertyswitch }}p:RunAnalyzers=false
+          ${{ matrix.buildscript }} clr.aot+libs.native+libs.sfx -c Release ${{ matrix.propertyswitch }}p:RunAnalyzers=false ${{ matrix.propertyswitch }}p:NoPgoOptimize=true
       - uses: actions/upload-artifact@v4
         with:
           name: baseline-${{ matrix.os }}
@@ -92,7 +92,7 @@ jobs:
           cd runtime
           git checkout compare
           git rev-parse HEAD
-          ${{ matrix.buildscript }} clr.aot+libs.native+libs.sfx -c Release ${{ matrix.propertyswitch }}p:RunAnalyzers=false
+          ${{ matrix.buildscript }} clr.aot+libs.native+libs.sfx -c Release ${{ matrix.propertyswitch }}p:RunAnalyzers=false ${{ matrix.propertyswitch }}p:NoPgoOptimize=true
       - uses: actions/upload-artifact@v4
         with:
           name: compare-${{ matrix.os }}
@@ -107,8 +107,7 @@ jobs:
     needs: build
     strategy:
       matrix:
-        os: [windows]
-#        os: [linux, windows]
+        os: [linux, windows]
         flavor: [baseline, compare]
         project:
           - hello
@@ -119,9 +118,9 @@ jobs:
           - kestrel-minimal
           - TodosApi
         include:
-#          - os: linux
-#            osrid: linux
-#            vm: ubuntu-latest
+          - os: linux
+            osrid: linux
+            vm: ubuntu-latest
           - os: windows
             osrid: win
             vm: windows-latest
