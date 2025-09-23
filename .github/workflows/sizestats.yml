@@ -188,7 +188,7 @@ jobs:
       matrix:
         flavor: [baseline, compare]
         project: [
-          { name: winrt-component-full, binary: winrt_component_full.dll },
+#          { name: winrt-component-full, binary: winrt_component_full.dll },
           { name: winrt-component-minimal, binary: winrt_component_minimal.dll }
         ]
     runs-on: windows-latest
