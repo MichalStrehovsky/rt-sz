@@ -130,7 +130,7 @@ jobs:
       - name: Install .NET
         uses: actions/setup-dotnet@v4
         with:
-          dotnet-version: "10.0"
+          dotnet-version: "11.0"
           dotnet-quality: daily
       - name: Checkout repo
         uses: actions/checkout@v4
@@ -197,7 +197,7 @@ jobs:
       - name: Install .NET
         uses: actions/setup-dotnet@v4
         with:
-          dotnet-version: "10.0"
+          dotnet-version: "11.0"
           dotnet-quality: daily
       - name: Checkout repo
         uses: actions/checkout@v4
