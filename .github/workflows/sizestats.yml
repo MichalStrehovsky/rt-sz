@@ -82,7 +82,7 @@ jobs:
           path: |
             runtime/artifacts/bin/coreclr/${{ matrix.os }}.x64.Release/aotsdk
             runtime/artifacts/bin/coreclr/${{ matrix.os }}.x64.Release/ilc-published
-            runtime/artifacts/bin/microsoft.netcore.app.runtime.${{ matrix.osrid }}-x64/Release/runtimes/${{ matrix.osrid }}-x64/lib/net10.0
+            runtime/artifacts/bin/microsoft.netcore.app.runtime.${{ matrix.osrid }}-x64/Release/runtimes/${{ matrix.osrid }}-x64/lib/net11.0
             runtime/artifacts/bin/microsoft.netcore.app.runtime.${{ matrix.osrid }}-x64/Release/runtimes/${{ matrix.osrid }}-x64/native
       - name: Taskkill dotnet.exe
         if: ${{ matrix.os == 'windows' }}
@@ -100,7 +100,7 @@ jobs:
           path: |
             runtime/artifacts/bin/coreclr/${{ matrix.os }}.x64.Release/aotsdk
             runtime/artifacts/bin/coreclr/${{ matrix.os }}.x64.Release/ilc-published
-            runtime/artifacts/bin/microsoft.netcore.app.runtime.${{ matrix.osrid }}-x64/Release/runtimes/${{ matrix.osrid }}-x64/lib/net10.0
+            runtime/artifacts/bin/microsoft.netcore.app.runtime.${{ matrix.osrid }}-x64/Release/runtimes/${{ matrix.osrid }}-x64/lib/net11.0
             runtime/artifacts/bin/microsoft.netcore.app.runtime.${{ matrix.osrid }}-x64/Release/runtimes/${{ matrix.osrid }}-x64/native
 
   dotnet:
@@ -142,13 +142,13 @@ jobs:
         run: |
           chmod +x $GITHUB_WORKSPACE/coreclr/linux.x64.Release/ilc-published/ilc
           cd src/${{ matrix.project }}
-          dotnet publish -p:IlcToolsPath=$GITHUB_WORKSPACE/coreclr/linux.x64.Release/ilc-published/ -p:IlcSdkPath=$GITHUB_WORKSPACE/coreclr/linux.x64.Release/aotsdk/ -p:IlcFrameworkPath=$GITHUB_WORKSPACE/microsoft.netcore.app.runtime.linux-x64/Release/runtimes/linux-x64/lib/net10.0/ -p:IlcFrameworkNativePath=$GITHUB_WORKSPACE/microsoft.netcore.app.runtime.linux-x64/Release/runtimes/linux-x64/native/ -p:IlcGenerateMstatFile=true -p:IlcGenerateDgmlFile=true -p:IlcGenerateMapFile=true ${{ toJson(github.event.issue.labels) == '[]' && ' ' || format('-p:{0}', join(github.event.issue.labels.*.name, ' -p:')) }}
+          dotnet publish -p:IlcToolsPath=$GITHUB_WORKSPACE/coreclr/linux.x64.Release/ilc-published/ -p:IlcSdkPath=$GITHUB_WORKSPACE/coreclr/linux.x64.Release/aotsdk/ -p:IlcFrameworkPath=$GITHUB_WORKSPACE/microsoft.netcore.app.runtime.linux-x64/Release/runtimes/linux-x64/lib/net11.0/ -p:IlcFrameworkNativePath=$GITHUB_WORKSPACE/microsoft.netcore.app.runtime.linux-x64/Release/runtimes/linux-x64/native/ -p:IlcGenerateMstatFile=true -p:IlcGenerateDgmlFile=true -p:IlcGenerateMapFile=true ${{ toJson(github.event.issue.labels) == '[]' && ' ' || format('-p:{0}', join(github.event.issue.labels.*.name, ' -p:')) }}
       - name: Publish (Windows)
         if: ${{ matrix.os == 'windows' }}
         shell: cmd
         run: |
           cd src\${{ matrix.project }}
-          dotnet publish -p:IlcToolsPath=%GITHUB_WORKSPACE%\coreclr\windows.x64.Release\ilc-published\ -p:IlcSdkPath=%GITHUB_WORKSPACE%\coreclr\windows.x64.Release\aotsdk\ -p:IlcFrameworkPath=%GITHUB_WORKSPACE%\microsoft.netcore.app.runtime.win-x64\Release\runtimes\win-x64\lib\net10.0\ -p:IlcFrameworkNativePath=%GITHUB_WORKSPACE%\microsoft.netcore.app.runtime.win-x64\Release\runtimes\win-x64\native\ -p:IlcGenerateMstatFile=true -p:IlcGenerateDgmlFile=true -p:IlcGenerateMapFile=true ${{ toJson(github.event.issue.labels) == '[]' && ' ' || format('-p:{0}', join(github.event.issue.labels.*.name, ' -p:')) }}
+          dotnet publish -p:IlcToolsPath=%GITHUB_WORKSPACE%\coreclr\windows.x64.Release\ilc-published\ -p:IlcSdkPath=%GITHUB_WORKSPACE%\coreclr\windows.x64.Release\aotsdk\ -p:IlcFrameworkPath=%GITHUB_WORKSPACE%\microsoft.netcore.app.runtime.win-x64\Release\runtimes\win-x64\lib\net11.0\ -p:IlcFrameworkNativePath=%GITHUB_WORKSPACE%\microsoft.netcore.app.runtime.win-x64\Release\runtimes\win-x64\native\ -p:IlcGenerateMstatFile=true -p:IlcGenerateDgmlFile=true -p:IlcGenerateMapFile=true ${{ toJson(github.event.issue.labels) == '[]' && ' ' || format('-p:{0}', join(github.event.issue.labels.*.name, ' -p:')) }}
       - uses: actions/upload-artifact@v4
         id: artifact-upload-step
         with:
