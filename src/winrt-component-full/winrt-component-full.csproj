@@ -10,7 +10,7 @@
     <EnableMsixTooling>true</EnableMsixTooling>
       
     <!-- CsWinRT settings -->
-    <WindowsSdkPackageVersion>10.0.22621.56</WindowsSdkPackageVersion>
+    <WindowsSdkPackageVersion>10.0.22621.73-preview</WindowsSdkPackageVersion>
     <CsWinRTComponent>true</CsWinRTComponent>
     <CsWinRTGenerateProjection>false</CsWinRTGenerateProjection>
 
@@ -26,9 +26,8 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.Web.WebView2" Version="1.0.2957.106" IncludeAssets="none" />
-    <PackageReference Include="Microsoft.Windows.CsWinRT" Version="2.2.0" />
-    <PackageReference Include="Microsoft.WindowsAppSDK" Version="1.6.250108002" />
+    <PackageReference Include="Microsoft.Windows.CsWinRT" Version="2.3.0-prerelease.251115.2" />
+    <PackageReference Include="Microsoft.WindowsAppSDK" Version="1.8.260209005" />
   </ItemGroup>
 
 </Project>
