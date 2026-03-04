@@ -10,7 +10,7 @@
     <EnableMsixTooling>true</EnableMsixTooling>
       
     <!-- CsWinRT settings -->
-    <WindowsSdkPackageVersion>10.0.22621.73-preview</WindowsSdkPackageVersion>
+    <WindowsSdkPackageVersion>10.0.22621.56</WindowsSdkPackageVersion>
     <CsWinRTComponent>true</CsWinRTComponent>
     <CsWinRTGenerateProjection>false</CsWinRTGenerateProjection>
       
@@ -35,7 +35,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.Windows.CsWinRT" Version="2.3.0-prerelease.251115.2" />
+    <PackageReference Include="Microsoft.Windows.CsWinRT" Version="2.2.0" />
   </ItemGroup>
 
 </Project>

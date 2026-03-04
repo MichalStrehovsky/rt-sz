@@ -205,8 +205,6 @@ namespace winrt_component_full
     {
         public int Number { get; } = 4;
         public string Value => "CsWinRT";
-        public CustomWWW Url => null;
-        public CustomPropertyStructType CustomPropertyStructType => new CustomPropertyStructType();
     }
 
     [GeneratedBindableCustomProperty]
@@ -625,7 +623,6 @@ namespace winrt_component_full
         }
     }
 
-    [WinRTRuntimeClassName("winrt_component_full.DisposableClassImpl")]
     public sealed class DisposableClass : IDisposable
     {
         public bool IsDisposed { get; set; }
@@ -741,7 +738,6 @@ namespace winrt_component_full
         }
     }
 
-    [WinRTRuntimeClassName("winrt_component_full.CustomReadOnlyDictionaryImpl")]
     public sealed class CustomReadOnlyDictionary : IReadOnlyDictionary<string, BasicStruct>
     {
         private readonly CustomDictionary _dictionary;
@@ -990,7 +986,6 @@ namespace winrt_component_full
         }
     }
 
-    [WinRTRuntimeClassName("winrt_component_full.StaticClassImpl")]
     public static class StaticClass
     {
         public static int GetNumber()
@@ -1985,7 +1980,6 @@ namespace winrt_component_full
         }
     }
 
-    [WinRTRuntimeClassName("winrt_component_full.NonActivatableFactoryImpl")]
     public static class NonActivatableFactory
     {
         public static NonActivatableType Create()
