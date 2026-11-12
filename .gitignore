@@ -1,0 +1,6 @@
+.syntax glob
+
+msbuild.binlog
+[Bb]in/
+[Oo]bj/
+.vs/
