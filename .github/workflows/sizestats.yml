@@ -36,21 +36,39 @@ jobs:
         include:
           - os: linux
             osrid: linux
+            arch: x64
+            ilctools: ilc-published
             vm: ubuntu-latest
             buildscript: ./build.sh
             propertyswitch: '-'
           - os: windows
             osrid: win
+            arch: x64
+            ilctools: ilc-published
             vm: windows-latest
             buildscript: .\build.cmd
             propertyswitch: '/'
+          - os: wasi
+            osrid: wasi
+            arch: wasm
+            ilctools: x64/ilc
+            vm: ubuntu-latest
+            buildscript: ./build.sh
+            propertyswitch: '-'
+            buildargs: -os wasi -arch wasm
     runs-on: ${{ matrix.vm }}
     steps:
       - name: Install dependencies
-        if: ${{ matrix.os == 'linux' }}
+        if: ${{ matrix.os != 'windows' }}
         run: |
           sudo apt-get update
           sudo apt-get install --no-install-recommends -y libkrb5-dev liblttng-ust-dev ninja-build libicu-dev libssl-dev
+      - name: Install WASI SDK
+        if: ${{ matrix.os == 'wasi' }}
+        run: |
+          curl --fail --location --retry 3 https://github.com/WebAssembly/wasi-sdk/releases/download/wasi-sdk-34/wasi-sdk-34.0-x86_64-linux.tar.gz -o "$RUNNER_TEMP/wasi-sdk.tar.gz"
+          tar -xzf "$RUNNER_TEMP/wasi-sdk.tar.gz" -C "$RUNNER_TEMP"
+          echo "WASI_SDK_PATH=$RUNNER_TEMP/wasi-sdk-34.0-x86_64-linux" >> "$GITHUB_ENV"
       - name: Checkout runtime repo
         uses: actions/checkout@v4
         with:
@@ -59,7 +77,7 @@ jobs:
           path: runtime
           show-progress: true
       - name: Create baseline and compare branches (Linux)
-        if: ${{ matrix.os == 'linux' }}
+        if: ${{ matrix.os != 'windows' }}
         run: cd runtime && git -c protocol.version=2 fetch --progress origin pull/${{ github.event.issue.title }}/head:compare && git branch baseline $(git merge-base compare main)
       - name: Create baseline and compare branches (Windows)
         if: ${{ matrix.os == 'windows' }}
@@ -74,17 +92,30 @@ jobs:
           cd runtime
           git checkout baseline
           git rev-parse HEAD
-          ${{ matrix.buildscript }} clr.aot+libs.native+libs.sfx -c Release ${{ matrix.propertyswitch }}p:RunAnalyzers=false ${{ matrix.propertyswitch }}p:NoPgoOptimize=true
+          ${{ matrix.buildscript }} clr.aot+libs.native+libs.sfx -c Release ${{ matrix.buildargs }} ${{ matrix.propertyswitch }}p:RunAnalyzers=false ${{ matrix.propertyswitch }}p:NoPgoOptimize=true
+      - name: Package baseline WASI runtime
+        if: ${{ matrix.os == 'wasi' }}
+        run: |
+          cd runtime
+          ./build.sh --projects src/installer/pkg/sfx/Microsoft.NETCore.App/Microsoft.NETCore.App.Runtime.NativeAOT.sfxproj --restore --build --pack -c Release -os wasi -arch wasm
+      - uses: actions/upload-artifact@v4
+        if: ${{ matrix.os == 'wasi' }}
+        with:
+          name: baseline-wasi-runtimepack
+          retention-days: 1
+          if-no-files-found: error
+          path: runtime/artifacts/packages/Release/Shipping/Microsoft.NETCore.App.Runtime.NativeAOT.wasi-wasm.*.nupkg
       - uses: actions/upload-artifact@v4
         with:
           name: baseline-${{ matrix.os }}
           retention-days: 1
           path: |
-            runtime/artifacts/bin/coreclr/${{ matrix.os }}.x64.Release/aotsdk
-            runtime/artifacts/bin/coreclr/${{ matrix.os }}.x64.Release/build
-            runtime/artifacts/bin/coreclr/${{ matrix.os }}.x64.Release/ilc-published
-            runtime/artifacts/bin/microsoft.netcore.app.runtime.${{ matrix.osrid }}-x64/Release/runtimes/${{ matrix.osrid }}-x64/lib/net12.0
-            runtime/artifacts/bin/microsoft.netcore.app.runtime.${{ matrix.osrid }}-x64/Release/runtimes/${{ matrix.osrid }}-x64/native
+            runtime/artifacts/bin/coreclr/${{ matrix.os }}.${{ matrix.arch }}.Release/aotsdk
+            runtime/artifacts/bin/coreclr/${{ matrix.os }}.${{ matrix.arch }}.Release/build
+            runtime/artifacts/bin/coreclr/${{ matrix.os }}.${{ matrix.arch }}.Release/ilc-published
+            runtime/artifacts/bin/coreclr/${{ matrix.os }}.${{ matrix.arch }}.Release/${{ matrix.ilctools }}
+            runtime/artifacts/bin/microsoft.netcore.app.runtime.${{ matrix.osrid }}-${{ matrix.arch }}/Release/runtimes/${{ matrix.osrid }}-${{ matrix.arch }}/lib/net12.0
+            runtime/artifacts/bin/microsoft.netcore.app.runtime.${{ matrix.osrid }}-${{ matrix.arch }}/Release/runtimes/${{ matrix.osrid }}-${{ matrix.arch }}/native
       - name: Taskkill dotnet.exe
         if: ${{ matrix.os == 'windows' }}
         run: taskkill -im dotnet.exe -f
@@ -93,23 +124,36 @@ jobs:
           cd runtime
           git checkout compare
           git rev-parse HEAD
-          ${{ matrix.buildscript }} clr.aot+libs.native+libs.sfx -c Release ${{ matrix.propertyswitch }}p:RunAnalyzers=false ${{ matrix.propertyswitch }}p:NoPgoOptimize=true
+          ${{ matrix.buildscript }} clr.aot+libs.native+libs.sfx -c Release ${{ matrix.buildargs }} ${{ matrix.propertyswitch }}p:RunAnalyzers=false ${{ matrix.propertyswitch }}p:NoPgoOptimize=true
+      - name: Package compare WASI runtime
+        if: ${{ matrix.os == 'wasi' }}
+        run: |
+          cd runtime
+          ./build.sh --projects src/installer/pkg/sfx/Microsoft.NETCore.App/Microsoft.NETCore.App.Runtime.NativeAOT.sfxproj --restore --build --pack -c Release -os wasi -arch wasm
+      - uses: actions/upload-artifact@v4
+        if: ${{ matrix.os == 'wasi' }}
+        with:
+          name: compare-wasi-runtimepack
+          retention-days: 1
+          if-no-files-found: error
+          path: runtime/artifacts/packages/Release/Shipping/Microsoft.NETCore.App.Runtime.NativeAOT.wasi-wasm.*.nupkg
       - uses: actions/upload-artifact@v4
         with:
           name: compare-${{ matrix.os }}
           retention-days: 1
           path: |
-            runtime/artifacts/bin/coreclr/${{ matrix.os }}.x64.Release/aotsdk
-            runtime/artifacts/bin/coreclr/${{ matrix.os }}.x64.Release/build
-            runtime/artifacts/bin/coreclr/${{ matrix.os }}.x64.Release/ilc-published
-            runtime/artifacts/bin/microsoft.netcore.app.runtime.${{ matrix.osrid }}-x64/Release/runtimes/${{ matrix.osrid }}-x64/lib/net12.0
-            runtime/artifacts/bin/microsoft.netcore.app.runtime.${{ matrix.osrid }}-x64/Release/runtimes/${{ matrix.osrid }}-x64/native
+            runtime/artifacts/bin/coreclr/${{ matrix.os }}.${{ matrix.arch }}.Release/aotsdk
+            runtime/artifacts/bin/coreclr/${{ matrix.os }}.${{ matrix.arch }}.Release/build
+            runtime/artifacts/bin/coreclr/${{ matrix.os }}.${{ matrix.arch }}.Release/ilc-published
+            runtime/artifacts/bin/coreclr/${{ matrix.os }}.${{ matrix.arch }}.Release/${{ matrix.ilctools }}
+            runtime/artifacts/bin/microsoft.netcore.app.runtime.${{ matrix.osrid }}-${{ matrix.arch }}/Release/runtimes/${{ matrix.osrid }}-${{ matrix.arch }}/lib/net12.0
+            runtime/artifacts/bin/microsoft.netcore.app.runtime.${{ matrix.osrid }}-${{ matrix.arch }}/Release/runtimes/${{ matrix.osrid }}-${{ matrix.arch }}/native
 
   dotnet:
     needs: build
     strategy:
       matrix:
-        os: [linux, windows]
+        os: [linux, windows, wasi]
         flavor: [baseline, compare]
         project:
           - hello
@@ -119,13 +163,29 @@ jobs:
           - reflection
           - kestrel-minimal
           - TodosApi
+        exclude:
+          - os: wasi
+            project: webapiaot
+          - os: wasi
+            project: avalonia.app
+          - os: wasi
+            project: kestrel-minimal
+          - os: wasi
+            project: TodosApi
         include:
           - os: linux
             osrid: linux
+            arch: x64
             vm: ubuntu-latest
           - os: windows
             osrid: win
+            arch: x64
             vm: windows-latest
+          - os: wasi
+            osrid: wasi
+            arch: wasm
+            binaryext: .wasm
+            vm: ubuntu-latest
     runs-on: ${{ matrix.vm }}
     steps:
 
@@ -139,12 +199,43 @@ jobs:
       - uses: actions/download-artifact@v4
         with:
           name: ${{ matrix.flavor }}-${{ matrix.os }}
+      - uses: actions/download-artifact@v4
+        if: ${{ matrix.os == 'wasi' }}
+        with:
+          name: ${{ matrix.flavor }}-wasi-runtimepack
+          path: runtime-pack
+      - name: Configure WASI runtime pack
+        if: ${{ matrix.os == 'wasi' }}
+        run: |
+          packages=(runtime-pack/Microsoft.NETCore.App.Runtime.NativeAOT.wasi-wasm.*.nupkg)
+          test "${#packages[@]}" -eq 1
+          test -f "${packages[0]}"
+          version=${packages[0]#runtime-pack/Microsoft.NETCore.App.Runtime.NativeAOT.wasi-wasm.}
+          echo "WASI_RUNTIME_PACK_VERSION=${version%.nupkg}" >> "$GITHUB_ENV"
+          echo "NUGET_PACKAGES=$RUNNER_TEMP/wasi-nuget-packages" >> "$GITHUB_ENV"
+      - name: Install WASI SDK
+        if: ${{ matrix.os == 'wasi' }}
+        run: |
+          curl --fail --location --retry 3 https://github.com/WebAssembly/wasi-sdk/releases/download/wasi-sdk-34/wasi-sdk-34.0-x86_64-linux.tar.gz -o "$RUNNER_TEMP/wasi-sdk.tar.gz"
+          tar -xzf "$RUNNER_TEMP/wasi-sdk.tar.gz" -C "$RUNNER_TEMP"
+          echo "WASI_SDK_PATH=$RUNNER_TEMP/wasi-sdk-34.0-x86_64-linux" >> "$GITHUB_ENV"
       - name: Publish (Linux)
         if: ${{ matrix.os == 'linux' }}
         run: |
           chmod +x $GITHUB_WORKSPACE/coreclr/linux.x64.Release/ilc-published/ilc
           cd src/${{ matrix.project }}
           dotnet publish -p:ILCompilerTargetsPath=$GITHUB_WORKSPACE/coreclr/linux.x64.Release/build/Microsoft.DotNet.ILCompiler.SingleEntry.targets -p:IlcBuildTasksPath=$GITHUB_WORKSPACE/coreclr/linux.x64.Release/ilc-published/netstandard/ILCompiler.Build.Tasks.dll -p:IlcToolsPath=$GITHUB_WORKSPACE/coreclr/linux.x64.Release/ilc-published/ -p:IlcSdkPath=$GITHUB_WORKSPACE/coreclr/linux.x64.Release/aotsdk/ -p:IlcFrameworkPath=$GITHUB_WORKSPACE/microsoft.netcore.app.runtime.linux-x64/Release/runtimes/linux-x64/lib/net12.0/ -p:IlcFrameworkNativePath=$GITHUB_WORKSPACE/microsoft.netcore.app.runtime.linux-x64/Release/runtimes/linux-x64/native/ -p:IlcGenerateMstatFile=true -p:IlcGenerateDgmlFile=true -p:IlcGenerateMapFile=true ${{ toJson(github.event.issue.labels) == '[]' && ' ' || format('-p:{0}', join(github.event.issue.labels.*.name, ' -p:')) }}
+      - name: Publish (WASI)
+        if: ${{ matrix.os == 'wasi' }}
+        run: |
+          chmod +x "$GITHUB_WORKSPACE/coreclr/wasi.wasm.Release/x64/ilc/ilc"
+          cd src/${{ matrix.project }}
+          dotnet publish -p:DisableUnsupportedError=true -p:PublishAotUsingRuntimePack=true -r wasi-wasm \
+            -p:RuntimeFrameworkVersion="$WASI_RUNTIME_PACK_VERSION" -p:RestoreConfigFile="$GITHUB_WORKSPACE/.github/wasi.nuget.config" \
+            -p:ILCompilerTargetsPath="$GITHUB_WORKSPACE/coreclr/wasi.wasm.Release/build/Microsoft.DotNet.ILCompiler.SingleEntry.targets" \
+            -p:IlcBuildTasksPath="$GITHUB_WORKSPACE/coreclr/wasi.wasm.Release/ilc-published/netstandard/ILCompiler.Build.Tasks.dll" \
+            -p:IlcToolsPath="$GITHUB_WORKSPACE/coreclr/wasi.wasm.Release/x64/ilc/" \
+            -p:IlcGenerateMstatFile=true -p:IlcGenerateDgmlFile=true -p:IlcGenerateMapFile=true ${{ toJson(github.event.issue.labels) == '[]' && ' ' || format('-p:{0}', join(github.event.issue.labels.*.name, ' -p:')) }}
       - name: Publish (Windows)
         if: ${{ matrix.os == 'windows' }}
         shell: cmd
@@ -157,15 +248,15 @@ jobs:
           retention-days: 90
           name: logs-${{ matrix.project }}-${{ matrix.flavor }}-${{ matrix.os }}
           path: |
-            src/${{ matrix.project }}/obj/Release/net12.0/${{ matrix.osrid }}-x64/native/${{ matrix.project }}.mstat
-            src/${{ matrix.project }}/obj/Release/net12.0/${{ matrix.osrid }}-x64/native/${{ matrix.project }}.map.xml
-            src/${{ matrix.project }}/obj/Release/net12.0/${{ matrix.osrid }}-x64/native/*.dgml.xml
-      - name: Log stats (Linux)
-        if: ${{ matrix.os == 'linux' }}
+            src/${{ matrix.project }}/obj/Release/net12.0/${{ matrix.osrid }}-${{ matrix.arch }}/native/${{ matrix.project }}.mstat
+            src/${{ matrix.project }}/obj/Release/net12.0/${{ matrix.osrid }}-${{ matrix.arch }}/native/${{ matrix.project }}.map.xml
+            src/${{ matrix.project }}/obj/Release/net12.0/${{ matrix.osrid }}-${{ matrix.arch }}/native/*.dgml.xml
+      - name: Log stats (Linux host)
+        if: ${{ matrix.os != 'windows' }}
         run: |
           echo -n '${{ steps.artifact-upload-step.outputs.artifact-url }} ' > ${{ matrix.project }}-${{ matrix.os }}.${{ matrix.flavor }}.txt
-          stat -c%s src/${{ matrix.project }}/bin/Release/net12.0/linux-x64/native/${{ matrix.project }} >> ${{ matrix.project }}-${{ matrix.os }}.${{ matrix.flavor }}.txt
-          ls -la src/${{ matrix.project }}/bin/Release/net12.0/linux-x64/native/
+          stat -c%s src/${{ matrix.project }}/bin/Release/net12.0/${{ matrix.osrid }}-${{ matrix.arch }}/native/${{ matrix.project }}${{ matrix.binaryext }} >> ${{ matrix.project }}-${{ matrix.os }}.${{ matrix.flavor }}.txt
+          ls -la src/${{ matrix.project }}/bin/Release/net12.0/${{ matrix.osrid }}-${{ matrix.arch }}/native/
       - name: Log stats (Windows)
         if: ${{ matrix.os == 'windows' }}
         shell: cmd
@@ -182,7 +273,7 @@ jobs:
         with:
           retention-days: 5
           name: binaries-${{ matrix.project }}-${{ matrix.os }}-${{ matrix.flavor }}
-          path: src/${{ matrix.project }}/bin/Release/net12.0/${{ matrix.osrid }}-x64/native/*
+          path: src/${{ matrix.project }}/bin/Release/net12.0/${{ matrix.osrid }}-${{ matrix.arch }}/native/*
   
   msbuild:
     needs: build
