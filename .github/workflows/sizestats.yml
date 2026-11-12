@@ -97,7 +97,7 @@ jobs:
         if: ${{ matrix.os == 'wasi' }}
         run: |
           cd runtime
-          ./build.sh --projects src/installer/pkg/sfx/Microsoft.NETCore.App/Microsoft.NETCore.App.Runtime.NativeAOT.sfxproj --restore --build --pack -c Release -os wasi -arch wasm
+          ./build.sh --projects "$PWD/src/installer/pkg/sfx/Microsoft.NETCore.App/Microsoft.NETCore.App.Runtime.NativeAOT.sfxproj" --restore --build --pack -c Release -os wasi -arch wasm
       - uses: actions/upload-artifact@v4
         if: ${{ matrix.os == 'wasi' }}
         with:
@@ -129,7 +129,7 @@ jobs:
         if: ${{ matrix.os == 'wasi' }}
         run: |
           cd runtime
-          ./build.sh --projects src/installer/pkg/sfx/Microsoft.NETCore.App/Microsoft.NETCore.App.Runtime.NativeAOT.sfxproj --restore --build --pack -c Release -os wasi -arch wasm
+          ./build.sh --projects "$PWD/src/installer/pkg/sfx/Microsoft.NETCore.App/Microsoft.NETCore.App.Runtime.NativeAOT.sfxproj" --restore --build --pack -c Release -os wasi -arch wasm
       - uses: actions/upload-artifact@v4
         if: ${{ matrix.os == 'wasi' }}
         with:
