@@ -56,6 +56,7 @@ jobs:
             buildscript: ./build.sh
             propertyswitch: '-'
             buildargs: -os wasi -arch wasm
+            extrasubsets: +host.native
     runs-on: ${{ matrix.vm }}
     steps:
       - name: Install dependencies
@@ -92,7 +93,7 @@ jobs:
           cd runtime
           git checkout baseline
           git rev-parse HEAD
-          ${{ matrix.buildscript }} clr.aot+libs.native+libs.sfx -c Release ${{ matrix.buildargs }} ${{ matrix.propertyswitch }}p:RunAnalyzers=false ${{ matrix.propertyswitch }}p:NoPgoOptimize=true
+          ${{ matrix.buildscript }} clr.aot+libs.native+libs.sfx${{ matrix.extrasubsets }} -c Release ${{ matrix.buildargs }} ${{ matrix.propertyswitch }}p:RunAnalyzers=false ${{ matrix.propertyswitch }}p:NoPgoOptimize=true
       - name: Package baseline WASI runtime
         if: ${{ matrix.os == 'wasi' }}
         run: |
@@ -124,7 +125,7 @@ jobs:
           cd runtime
           git checkout compare
           git rev-parse HEAD
-          ${{ matrix.buildscript }} clr.aot+libs.native+libs.sfx -c Release ${{ matrix.buildargs }} ${{ matrix.propertyswitch }}p:RunAnalyzers=false ${{ matrix.propertyswitch }}p:NoPgoOptimize=true
+          ${{ matrix.buildscript }} clr.aot+libs.native+libs.sfx${{ matrix.extrasubsets }} -c Release ${{ matrix.buildargs }} ${{ matrix.propertyswitch }}p:RunAnalyzers=false ${{ matrix.propertyswitch }}p:NoPgoOptimize=true
       - name: Package compare WASI runtime
         if: ${{ matrix.os == 'wasi' }}
         run: |
