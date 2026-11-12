@@ -105,7 +105,9 @@ jobs:
           name: baseline-wasi-runtimepack
           retention-days: 1
           if-no-files-found: error
-          path: runtime/artifacts/packages/Release/Shipping/Microsoft.NETCore.App.Runtime.NativeAOT.wasi-wasm.*.nupkg
+          path: |
+            runtime/artifacts/packages/Release/Shipping/Microsoft.NETCore.App.Runtime.NativeAOT.wasi-wasm.*.nupkg
+            !runtime/artifacts/packages/Release/Shipping/Microsoft.NETCore.App.Runtime.NativeAOT.wasi-wasm.*.symbols.nupkg
       - uses: actions/upload-artifact@v4
         with:
           name: baseline-${{ matrix.os }}
@@ -137,7 +139,9 @@ jobs:
           name: compare-wasi-runtimepack
           retention-days: 1
           if-no-files-found: error
-          path: runtime/artifacts/packages/Release/Shipping/Microsoft.NETCore.App.Runtime.NativeAOT.wasi-wasm.*.nupkg
+          path: |
+            runtime/artifacts/packages/Release/Shipping/Microsoft.NETCore.App.Runtime.NativeAOT.wasi-wasm.*.nupkg
+            !runtime/artifacts/packages/Release/Shipping/Microsoft.NETCore.App.Runtime.NativeAOT.wasi-wasm.*.symbols.nupkg
       - uses: actions/upload-artifact@v4
         with:
           name: compare-${{ matrix.os }}
@@ -232,7 +236,8 @@ jobs:
           chmod +x "$GITHUB_WORKSPACE/coreclr/wasi.wasm.Release/x64/ilc/ilc"
           cd src/${{ matrix.project }}
           dotnet publish -p:DisableUnsupportedError=true -p:PublishAotUsingRuntimePack=true -r wasi-wasm \
-            -p:RuntimeFrameworkVersion="$WASI_RUNTIME_PACK_VERSION" -p:RestoreConfigFile="$GITHUB_WORKSPACE/.github/wasi.nuget.config" \
+            -p:WasiRuntimePackVersion="$WASI_RUNTIME_PACK_VERSION" -p:RestoreConfigFile="$GITHUB_WORKSPACE/.github/wasi.nuget.config" \
+            -p:CustomAfterMicrosoftCommonTargets="$GITHUB_WORKSPACE/.github/wasi-runtime-pack.targets" \
             -p:ILCompilerTargetsPath="$GITHUB_WORKSPACE/coreclr/wasi.wasm.Release/build/Microsoft.DotNet.ILCompiler.SingleEntry.targets" \
             -p:IlcBuildTasksPath="$GITHUB_WORKSPACE/coreclr/wasi.wasm.Release/ilc-published/netstandard/ILCompiler.Build.Tasks.dll" \
             -p:IlcToolsPath="$GITHUB_WORKSPACE/coreclr/wasi.wasm.Release/x64/ilc/" \

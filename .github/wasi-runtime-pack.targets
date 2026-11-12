@@ -1,0 +1,9 @@
+<Project>
+  <!-- The global RuntimeFrameworkVersion would also override compiler and linker package versions. -->
+  <Target Name="SetWasiRuntimePackVersion" BeforeTargets="ProcessFrameworkReferences">
+    <Error Condition="'$(WasiRuntimePackVersion)' == ''" Text="WasiRuntimePackVersion must be set." />
+    <ItemGroup>
+      <FrameworkReference Update="Microsoft.NETCore.App" RuntimeFrameworkVersion="$(WasiRuntimePackVersion)" />
+    </ItemGroup>
+  </Target>
+</Project>
